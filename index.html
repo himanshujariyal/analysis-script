@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tracking: AlmaConnect</title>
+	<style type="text/css">
+	div{
+		width: 400px;
+		height: 200px;
+		background-color: #EEE;
+	}
+	</style>
+</head>
+<body>
+	<h1>This is a testing page</h1>
+	<div id="div1"><a href="">Dummy link</a></div>
+	<div>My Div</div>
+</body>
+<script type="text/javascript" src="./js/tracking.js"></script>
+<script type="text/javascript" src="./js/md5.js"></script>
+<script type="text/javascript">
+		var ScribeConsoleTracker = function(config) {
+		  if (!(this instanceof ScribeConsoleTracker)) return new ScribeConsoleTracker(config);
+		  
+		  this.config = config;
+		};
+
+		// TODO: allow in debug mode
+		ScribeConsoleTracker.prototype.tracker = function(info) {
+		//TODO: now it is printing in console, send this to server
+		// check for debug mode..
+		//if(scribe.options.modes.events.debug){
+		  var path = info.path;
+		  var value = info.value;
+
+		  if (typeof console !== 'undefined') {
+		    console.log(path);
+		    console.log(value);
+
+		    info.success && setTimeout(info.success, 0);
+		  } else {
+		    info.failure && setTimeout(info.failure, 0);
+		  }
+		 //}
+		};
+
+		ScribeConsoleTracker.prototype.randomTracker = function(info) {
+		//TODO: now it is printing in console, send this to server
+		 
+		 //if(scribe.options.modes.events.debug){
+		 //console.log(scribe.options.modes.events.debug);
+		  var data = info.eventName;
+		  var category = info.category;
+
+		  if (typeof console !== 'undefined') {
+		   	console.log(data);
+		    console.log(category);
+
+		    info.success && setTimeout(info.success, 0);
+		  } else {
+		    info.failure && setTimeout(info.failure, 0);
+		  }
+		 //}
+
+		};
+
+
+</script>
+
+<script type="text/javascript">
+	//start
+	var scribe = new Scribe(new ScribeConsoleTracker({
+		modes:{
+			events:{
+				debug:         true,
+				customRequest: true,
+				pageView:      true, 
+				reload:        true, 
+				nonLinkClicks: false,
+				hashChange:    true,
+				engage:        false,
+				formSubmit:    true,
+				jsRedirect:    true,
+				links:         true
+			}
+		},
+		bucket:'daily',
+        breakoutUsers:    false,
+        breakoutVisitors: false}));
+
+</script>
+</html>
