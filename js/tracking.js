@@ -539,7 +539,8 @@ if (typeof Scribe === 'undefined') {
         cookieDomain = "; domain=" + document.domain;
       }
       //console.log(value);
-      document.cookie = name + "=" + value + expires + cookieDomain + "; path=/";
+      document.cookie = name + "=" + value;
+      //document.cookie = name + "=" + value + expires + cookieDomain + "; path=/";
     }
 
     Util.getCookie = function(name) {
@@ -1358,9 +1359,8 @@ if (typeof Scribe === 'undefined') {
       //   return sessionId;
       // })();
       
-      this.context.sessionId = ( function () {
+      this.context.updateSessionId = function(){
         var ttl = 0.5 * 60; // 1/2 hours
-
         var sessionId = Util.getCookie('scribe_sid');
         //console.log(sessionId);
         if(sessionId){
@@ -1372,6 +1372,23 @@ if (typeof Scribe === 'undefined') {
           sessionId = Util.genGuid();
          // console.log(sessionId)
           Util.setCookie('scribe_sid',sessionId,ttl);
+        }
+      }
+
+      this.context.sessionId = ( function () {
+        var ttl = 0.5 * 60; // 1/2 hours
+
+        var sessionId = Util.getCookie('scribe_sid');
+        //console.log(sessionId);
+        if(sessionId){
+          //console.log("no sessionId");
+          Util.setCookie('scribe_sid',sessionId,ttl);
+        }
+        else{
+          sessionId = Util.genGuid();
+         // console.log(sessionId)
+          Util.setCookie('scribe_sid',sessionId,ttl);
+          //document.cookie = "scribe_sid=" + sessionId;
         }
         return sessionId;
       })();
@@ -1669,7 +1686,7 @@ if (typeof Scribe === 'undefined') {
       
       this.context = Util.merge(context || {}, this.context);
       //update sessionId / scribe_sid
-      this.context.sessionId();
+      this.context.updateSessionId();
       this.tracker({
         path:     this.getPath('profile'), 
         value:    this._createEvent(undefined, props),
@@ -1717,7 +1734,7 @@ if (typeof Scribe === 'undefined') {
      */
     Scribe.prototype.track = function(name, props, success, failure) {
       //update sessionId / scribe_sid
-      this.context.sessionId();
+      this.context.updateSessionId();
       this.tracker({
         path:    this.getPath('events'), 
         value:   this._createEvent(name, props),
@@ -1766,7 +1783,7 @@ if (typeof Scribe === 'undefined') {
 
       this.context = Util.merge(context || {}, this.context);
       //update sessionId / scribe_sid
-      this.context.sessionId();
+      this.context.updateSessionId();
       this.tracker({
         path:     this.getPath('groups'), 
         value:    this._createEvent(undefined, props),

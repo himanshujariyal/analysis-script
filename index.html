@@ -18,6 +18,41 @@
 <script type="text/javascript" src="./js/tracking.js"></script>
 <script type="text/javascript" src="./js/md5.js"></script>
 <script type="text/javascript">
+
+		//POST
+		function PostData(data) {
+		    // 1. Create XHR instance - Start
+		    var xhr;
+		    if (window.XMLHttpRequest) {
+		        xhr = new XMLHttpRequest();
+		    }
+		    else if (window.ActiveXObject) {
+		        xhr = new ActiveXObject("Msxml2.XMLHTTP");
+		    }
+		    else {
+		        throw new Error("Ajax is not supported by this browser");
+		    }
+		    // 1. Create XHR instance - End
+		    
+		    // 2. Define what to do when XHR feed you the response from the server - Start
+		    // xhr.onreadystatechange = function () {
+		    //     if (xhr.readyState === 4) {
+		    //         if (xhr.status == 200 && xhr.status < 300) {
+		    //             document.getElementById('div1').innerHTML = xhr.responseText;
+		    //         }
+		    //     }
+		    // }
+		    // 2. Define what to do when XHR feed you the response from the server - Start
+
+		    var userid = "==================testing================";
+
+		    // 3. Specify your action, location and Send to the server - Start 
+		    xhr.open('POST', "/analysis/visits");
+		    xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+		    xhr.send(JSON.stringify(data));
+		    // 3. Specify your action, location and Send to the server - End
+		}
+
 		var ScribeConsoleTracker = function(config) {
 		  if (!(this instanceof ScribeConsoleTracker)) return new ScribeConsoleTracker(config);
 		  
@@ -26,11 +61,7 @@
 		  //console.log("inside sct"+this.debug);
 		};
 
-		// TODO: allow in debug mode
 		ScribeConsoleTracker.prototype.tracker = function(info) {
-		//TODO: now it is printing in console, send this to server
-		// check for debug mode..
-		console.log(info.debug)
 		if(info.debug){
 		  var path = info.path;
 		  var value = info.value;	
@@ -44,10 +75,13 @@
 		    info.failure && setTimeout(info.failure, 0);
 		  }
 		}//if
+		//PostData(info);
 		};
 
+
 		ScribeConsoleTracker.prototype.randomTracker = function(info) {
-		//TODO: now it is printing in console, send this to server
+		if(info.debug){
+
 		  var data = info.eventName;
 		  var category = info.category;
 
@@ -59,7 +93,10 @@
 		  } else {
 		    info.failure && setTimeout(info.failure, 0);
 		  }
+		}//if
+		//PostData(info);
 		};
+
 
 
 </script>
