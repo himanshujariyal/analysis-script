@@ -522,6 +522,49 @@ if (typeof Scribe === 'undefined') {
       return (pad + n).slice(-pad.length);
     };
 
+
+    // for session storage 
+    // session === visit
+
+    Util.setCookie = function(name, value, ttl) {
+        //console.log('name:'+name+'value:'+value+'ttl:'+ttl)
+      var expires = "";
+      var cookieDomain = "";
+      if (ttl) {
+        var date = new Date();
+        date.setTime(date.getTime() + (ttl * 60 * 1000));
+        expires = "; expires=" + date.toGMTString();
+      }
+      if (document.domain) {
+        cookieDomain = "; domain=" + document.domain;
+      }
+      //console.log(value);
+      document.cookie = name + "=" + value + expires + cookieDomain + "; path=/";
+    }
+
+    Util.getCookie = function(name) {
+      var i, c;
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for (i = 0; i < ca.length; i++) {
+        c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+          return c.substring(nameEQ.length, c.length);
+        }
+      }
+      return null;
+    }
+
+
+
+    // Util.destroyCookie = function(name) {
+    //   setCookie(name, "", -1);
+    // }
+
+
     var DomUtil = {};
 
     DomUtil.getFormData = function(node) {
@@ -1300,21 +1343,40 @@ if (typeof Scribe === 'undefined') {
 
       this.context = {};
 
+      this.context.debug = this.options.debug;
       /* 
         Stores info like : plugin's data + localeData + userData 
       */
       this.context.fingerprint = Env.getFingerprint();
 
-      /* ? decide what to use localstorage(5mb) OR cookies (2kb)
-          stores scribe_id = session storage 
-      */
-      this.context.sessionId = (function() {
-        var sessionId = sessionStorage.getItem('scribe_sid') || Util.genGuid();
+      
+      // this.context.sessionId = (function() {
+      //   var sessionId = sessionStorage.getItem('scribe_sid') || Util.genGuid();
 
-        sessionStorage.setItem('scribe_sid', sessionId);
+      //   sessionStorage.setItem('scribe_sid', sessionId);
 
+      //   return sessionId;
+      // })();
+      
+      this.context.sessionId = ( function () {
+        var ttl = 0.5 * 60; // 1/2 hours
+
+        var sessionId = Util.getCookie('scribe_sid');
+        //console.log(sessionId);
+        if(sessionId){
+          //console.log("no sessionId");
+
+          Util.setCookie('scribe_sid',sessionId,ttl);
+        }
+        else{
+          sessionId = Util.genGuid();
+         // console.log(sessionId)
+          Util.setCookie('scribe_sid',sessionId,ttl);
+        }
         return sessionId;
       })();
+
+
 
       // visitorId = scribe_vid
       this.context.visitorId = (function() {
@@ -1547,12 +1609,14 @@ if (typeof Scribe === 'undefined') {
       this.outbox = JSON.parse(localStorage.getItem('scribe_outbox') || '[]');
     };
 
+    //if this shows error check for debug mode.. 
     Scribe.prototype._sendOutbox = function() {
       for (var i = 0; i < this.outbox.length; i++) {
         var message = this.outbox[i];
 
         var event = message.value.event;
-
+        //for debug mode 
+        message.debug = this.context.debug;
         // Specially modify redirect, formSubmit events to save the new URL,
         // because the URL is not known at the time of the event:
         if (ArrayUtil.contains(['redirect', 'formSubmit'], event)) {
@@ -1604,13 +1668,15 @@ if (typeof Scribe === 'undefined') {
       localStorage.setItem('scribe_uprofile', JSON.stringify(props || {}));
       
       this.context = Util.merge(context || {}, this.context);
-
+      //update sessionId / scribe_sid
+      this.context.sessionId();
       this.tracker({
         path:     this.getPath('profile'), 
         value:    this._createEvent(undefined, props),
         op:       'replace',
         success:  success,
-        failure:  failure
+        failure:  failure,
+        debug:    this.context.debug, 
       });
     };
 
@@ -1650,12 +1716,15 @@ if (typeof Scribe === 'undefined') {
        op: append or replace ?? read more 
      */
     Scribe.prototype.track = function(name, props, success, failure) {
+      //update sessionId / scribe_sid
+      this.context.sessionId();
       this.tracker({
         path:    this.getPath('events'), 
         value:   this._createEvent(name, props),
         op:      'append',
         success: success,
-        failure: failure
+        failure: failure,
+        debug:   this.context.debug
       });
     };
 
@@ -1696,13 +1765,15 @@ if (typeof Scribe === 'undefined') {
       this.context.userGroupProfile = props;
 
       this.context = Util.merge(context || {}, this.context);
-
+      //update sessionId / scribe_sid
+      this.context.sessionId();
       this.tracker({
         path:     this.getPath('groups'), 
         value:    this._createEvent(undefined, props),
         op:       'replace',
         success:  success,
-        failure:  failure
+        failure:  failure,
+        debug:   this.context.debug
       });
     };
 

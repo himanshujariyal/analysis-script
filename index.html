@@ -22,15 +22,18 @@
 		  if (!(this instanceof ScribeConsoleTracker)) return new ScribeConsoleTracker(config);
 		  
 		  this.config = config;
+		  this.debug = config.debug;
+		  //console.log("inside sct"+this.debug);
 		};
 
 		// TODO: allow in debug mode
 		ScribeConsoleTracker.prototype.tracker = function(info) {
 		//TODO: now it is printing in console, send this to server
 		// check for debug mode..
-		//if(scribe.options.modes.events.debug){
+		console.log(info.debug)
+		if(info.debug){
 		  var path = info.path;
-		  var value = info.value;
+		  var value = info.value;	
 
 		  if (typeof console !== 'undefined') {
 		    console.log(path);
@@ -40,14 +43,11 @@
 		  } else {
 		    info.failure && setTimeout(info.failure, 0);
 		  }
-		 //}
+		}//if
 		};
 
 		ScribeConsoleTracker.prototype.randomTracker = function(info) {
 		//TODO: now it is printing in console, send this to server
-		 
-		 //if(scribe.options.modes.events.debug){
-		 //console.log(scribe.options.modes.events.debug);
 		  var data = info.eventName;
 		  var category = info.category;
 
@@ -59,8 +59,6 @@
 		  } else {
 		    info.failure && setTimeout(info.failure, 0);
 		  }
-		 //}
-
 		};
 
 
@@ -71,7 +69,6 @@
 	var scribe = new Scribe(new ScribeConsoleTracker({
 		modes:{
 			events:{
-				debug:         true,
 				customRequest: true,
 				pageView:      true, 
 				reload:        true, 
@@ -83,7 +80,8 @@
 				links:         true
 			}
 		},
-		bucket:'daily',
+		debug:            true,
+		bucket:        'daily',
         breakoutUsers:    false,
         breakoutVisitors: false}));
 
