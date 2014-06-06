@@ -535,7 +535,7 @@ if (typeof Scribe === 'undefined') {
         date.setTime(date.getTime() + (ttl * 60 * 1000));
         expires = "; expires=" + date.toGMTString();
       }
-      if (document.domain) {
+      if (document.domain && document.domain != "localhost") {
         cookieDomain = "; domain=" + document.domain;
       }
       //console.log(value);
